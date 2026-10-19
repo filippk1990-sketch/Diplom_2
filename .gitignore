@@ -4,3 +4,7 @@ __pycache__/
 allure-results/
 allure-report/
 *.pyc
+
+# Local offline runs must never enter the review PR.
+allure-offline*/
+.pytest_cache/
