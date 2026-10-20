@@ -1,5 +1,8 @@
 # Diplom_2 — Stellar Burgers / API
 
+**Работа для сдачи:** Филипп Крощенко · когорта 53 · GitHub: [filippk1990-sketch](https://github.com/filippk1990-sketch).
+
+
 Все сценарии регистрации, входа и создания заказов; `pytest`, `requests`, `allure-pytest`.
 
 ```powershell
