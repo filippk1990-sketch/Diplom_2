@@ -20,9 +20,12 @@ class TestRegistration:
             assert data["refreshToken"]
         finally:
             if response.status_code == 200 and response.json().get("accessToken"):
-                api.delete(f"{BASE_URL}/api/auth/user",
-                           headers={"Authorization": response.json()["accessToken"]},
-                           timeout=REQUEST_TIMEOUT)
+                cleanup = api.delete(f"{BASE_URL}/api/auth/user",
+                                     headers={"Authorization": response.json()["accessToken"]},
+                                     timeout=REQUEST_TIMEOUT)
+                assert cleanup.status_code == 202, (
+                    f"Could not clean up registered user: {cleanup.status_code} {cleanup.text}"
+                )
 
     @allure.title("Нельзя повторно зарегистрировать того же пользователя")
     def test_register_duplicate_user(self, api, registered_user):
