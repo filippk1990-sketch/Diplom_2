@@ -3,9 +3,9 @@
 Все сценарии регистрации, входа и создания заказов; `pytest`, `requests`, `allure-pytest`.
 
 ```powershell
-py -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m pytest --alluredir=allure-results
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
@@ -14,3 +14,10 @@ allure serve allure-results
 Переменные: `STELLAR_URL` (базовый адрес), `REQUEST_TIMEOUT` (секунды). Ветка: `develop2`.
 
 Внимание: документация PDF допускает создание заказа без авторизации (HTTP 200 с ингредиентами), хотя описание UI говорит об обязательной авторизации для кнопки оформления. API-тест следует поведению эндпоинта и проверяет гостевой заказ.
+
+
+## Проверка на офлайн-симуляторе
+
+Отчёты в папке `reports/` получены **только на локальном имитаторе**. Они не являются подтверждением поведения оригинального веб-приложения. Проверку оригинального стенда нужно запустить, когда он станет доступен.
+
+Allure Commandline (CLI) устанавливается отдельно от Python-пакета `allure-pytest`.
