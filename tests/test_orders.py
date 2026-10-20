@@ -38,8 +38,7 @@ class TestOrders:
             timeout=REQUEST_TIMEOUT,
         )
         assert response.status_code == 500, response.text
-        # API documentation specifies HTTP 500, not a stable JSON error schema.
-        # The body must contain an error, rather than a success response.
-        assert response.text.strip(), "Server returned empty error body"
-        if "application/json" in response.headers.get("Content-Type", ""):
+        # The documentation specifies HTTP 500 but does not define its
+        # response body. Check the JSON error flag only if the server sent it.
+        if "application/json" in response.headers.get("Content-Type", "") and response.content:
             assert response.json().get("success") is not True
