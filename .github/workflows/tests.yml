@@ -1,25 +1,59 @@
-name: Diplom_2 tests
+name: Diplom_2 API - validation and live tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 jobs:
-  tests:
+  collection:
+    name: Collect tests without external server
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.11']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+          python-version: '3.11'
+      - name: Install requirements
         run: python -m pip install -r requirements.txt
-      - name: Run tests
+      - name: Collect tests
+        run: python -m pytest --collect-only -q
+  stand-availability:
+    name: Confirm original Stellar Burgers is online
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - name: Probe the real ingredients API
+        id: check
+        shell: bash
+        run: |
+          URL=https://stellarburgers.education-services.ru/api/ingredients
+          if curl --fail --silent --show-error --location --connect-timeout 5 --max-time 10 "$URL" -o /tmp/stellar-ingredients.json && python -c 'import json; d=json.load(open("/tmp/stellar-ingredients.json")); assert d.get("success") is True and isinstance(d.get("data"), list) and len(d["data"]) > 0'; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'Original Stellar Burgers reachable. LIVE tests will run.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '### BLOCKED: LIVE tests NOT executed' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Original server is unavailable. Only test collection was checked; OFFLINE results in reports/ are from a simulator, not the original service.' >> "$GITHUB_STEP_SUMMARY"
+            echo '::warning::Real Stellar Burgers is unavailable; LIVE tests SKIPPED (not passed).'
+          fi
+  live-tests:
+    name: LIVE API
+    needs: [collection, stand-availability]
+    if: needs.stand-availability.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install requirements
+        run: python -m pip install -r requirements.txt
+      - name: Run tests on ORIGINAL server
         run: python -m pytest --alluredir=allure-results
-      - name: Upload report artifacts
+      - name: Upload REAL run results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: allure-LIVE-api
           path: allure-results/
+          if-no-files-found: ignore
