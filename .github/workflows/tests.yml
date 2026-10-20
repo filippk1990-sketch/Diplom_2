@@ -17,7 +17,7 @@ jobs:
       - name: Collect tests
         run: python -m pytest --collect-only -q
   stand-availability:
-    name: Confirm original Stellar Burgers is online
+    name: Probe original server reachability (not a test run)
     runs-on: ubuntu-latest
     outputs:
       available: ${{ steps.check.outputs.available }}
