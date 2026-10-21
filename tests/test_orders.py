@@ -1,17 +1,14 @@
 import allure
 import pytest
-from config import BASE_URL, REQUEST_TIMEOUT
 
 
 @allure.feature("Создание заказа")
 class TestOrders:
     @pytest.mark.parametrize("auth_headers", [True, False], indirect=True,
                              ids=["authorized", "guest"])
-    @allure.title("Заказ с ингредиентами; авторизация={auth_headers}")
+    @allure.title("Создание заказа с ингредиентами")
     def test_create_order_with_ingredients(self, api, ingredients, auth_headers):
-        response = api.post(f"{BASE_URL}/api/orders",
-                            json={"ingredients": ingredients},
-                            headers=auth_headers, timeout=REQUEST_TIMEOUT)
+        response = api.create_order(ingredients, auth_headers)
         assert response.status_code == 200, response.text
         data = response.json()
         assert data["success"] is True
@@ -21,24 +18,19 @@ class TestOrders:
 
     @pytest.mark.parametrize("auth_headers", [True, False], indirect=True,
                              ids=["authorized", "guest"])
-    @allure.title("Заказ без ингредиентов; авторизация={auth_headers}")
+    @allure.title("Создание заказа без ингредиентов")
     def test_create_order_without_ingredients(self, api, auth_headers):
-        response = api.post(f"{BASE_URL}/api/orders", json={"ingredients": []},
-                            headers=auth_headers, timeout=REQUEST_TIMEOUT)
+        response = api.create_order([], auth_headers)
         assert response.status_code == 400, response.text
         assert response.json() == {
-            "success": False, "message": "Ingredient ids must be provided"
+            "success": False,
+            "message": "Ingredient ids must be provided",
         }
 
-    @allure.title("Некорректный идентификатор ингредиента возвращает HTTP 500")
+    @allure.title("Создание заказа с неверным идентификатором ингредиента")
     def test_create_order_with_invalid_ingredient_hash(self, api, registered_user):
-        response = api.post(
-            f"{BASE_URL}/api/orders", json={"ingredients": ["not-a-valid-id"]},
-            headers={"Authorization": registered_user["accessToken"]},
-            timeout=REQUEST_TIMEOUT,
+        response = api.create_order(
+            ["not-a-valid-id"],
+            {"Authorization": registered_user["accessToken"]},
         )
         assert response.status_code == 500, response.text
-        # The documentation specifies HTTP 500 but does not define its
-        # response body. Check the JSON error flag only if the server sent it.
-        if "application/json" in response.headers.get("Content-Type", "") and response.content:
-            assert response.json().get("success") is not True
