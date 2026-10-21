@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+allure-results/
+allure-report/
+*.pyc
+
+# Local offline runs must never enter the review PR.
+allure-offline*/
+.pytest_cache/
+# Ignore raw pytest/Allure output from local runs.
+allure-*/
+allure_*/
+.coverage.*
