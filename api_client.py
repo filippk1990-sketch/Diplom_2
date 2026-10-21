@@ -43,8 +43,10 @@ class APIClient:
 
     @allure.step("DELETE /api/auth/user — удаление тестового пользователя")
     def delete_user(self, token):
-        return self.session.delete(
+        response = self.session.delete(
             f"{BASE_URL}/api/auth/user",
             headers={"Authorization": token},
             timeout=REQUEST_TIMEOUT,
         )
+        response.raise_for_status()
+        return response
